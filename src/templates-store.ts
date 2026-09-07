@@ -29,7 +29,8 @@ import { DEFAULT_TEMPLATE_SOURCE_ID, TEMPLATE_SOURCES, type TemplateCase, type T
 /** Host-side fetch definition of one source (ids mirror TEMPLATE_SOURCES). */
 interface TemplateSourceDef {
   /** Upstream JSON list refreshed from. */
-  listUrl: string
+  listUrl?: string
+  imageUrlsPath?: string
   /** Remote image directory (file names come from the case list). */
   imageBaseUrl: string
   /** Bundled snapshot shipped inside the package. */
@@ -45,6 +46,7 @@ interface TemplateSourceDef {
 
 /** Source registry (host half): where each TEMPLATE_SOURCES entry loads from. */
 const SOURCE_DEFS: Record<string, TemplateSourceDef> = {
+  punk: { imageBaseUrl: '', bundledPath: fileURLToPath(new URL('../src/templates/punk-cases.json', import.meta.url)), imageUrlsPath: fileURLToPath(new URL('../src/templates/punk-images.json', import.meta.url)) },
   vibeui: {
     listUrl: 'https://vibeui.top/extra/awesome-gpt-image-2/data/cases.json',
     imageBaseUrl: 'https://vibeui.top/extra/awesome-gpt-image-2/data/images/',
@@ -195,8 +197,8 @@ export async function listTemplates(sourceId: string = DEFAULT_TEMPLATE_SOURCE_I
   if (def === undefined) throw new Error(`未知的模板库来源：${sourceId}`)
   const memo = memos.get(sourceId)
   if (memo !== undefined) return memo
-  const refreshed = await readSnapshotFile(path.join(REFRESHED_DIR, sourceId, 'cases.json'))
-    ?? (def.legacySnapshotPath !== undefined ? await readSnapshotFile(LEGACY_SNAPSHOT_PATH) : undefined)
+  const refreshed = def.listUrl ? (await readSnapshotFile(path.join(REFRESHED_DIR, sourceId, 'cases.json'))
+    ?? (def.legacySnapshotPath !== undefined ? await readSnapshotFile(LEGACY_SNAPSHOT_PATH) : undefined)) : undefined
   if (refreshed !== undefined) {
     const result: TemplateListResult = { sourceId, ...refreshed, total: refreshed.cases.length, origin: 'refreshed' }
     memos.set(sourceId, result)
@@ -221,6 +223,7 @@ export async function listTemplates(sourceId: string = DEFAULT_TEMPLATE_SOURCE_I
 export async function refreshTemplates(sourceId: string = DEFAULT_TEMPLATE_SOURCE_ID): Promise<TemplateRefreshResult> {
   const def = sourceDefOf(sourceId)
   if (def === undefined) throw new Error(`未知的模板库来源：${sourceId}`)
+  if (!def.listUrl) { const list = await listTemplates(sourceId); return { sourceId, total: list.total, fetchedAt: list.fetchedAt } }
   let response: Response
   try {
     response = await fetch(def.listUrl, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
@@ -284,6 +287,7 @@ export async function sampleTemplates(count: number = 9): Promise<TemplateSample
   const size = Math.min(12, Math.max(1, Math.floor(count) || 9))
   const pools: Array<{ sourceId: string; cases: TemplateCase[] }> = []
   for (const source of TEMPLATE_SOURCES) {
+    if (source.bundledOnly) continue // Skills need a subject before becoming a prompt.
     try {
       const list = await listTemplates(source.id)
       if (list.cases.length > 0) pools.push({ sourceId: source.id, cases: shuffled(list.cases) })
@@ -327,7 +331,9 @@ function mimeOfFile(file: string): string {
 async function fetchTemplateImage(def: TemplateSourceDef, file: string, cacheDir: string): Promise<{ data: Buffer; mime: string } | undefined> {
   let response: Response
   try {
-    response = await fetch(`${def.imageBaseUrl}${encodeURIComponent(file)}`, {
+    const url = def.imageUrlsPath ? JSON.parse(await fs.readFile(def.imageUrlsPath, 'utf8'))[file] : `${def.imageBaseUrl}${encodeURIComponent(file)}`
+    if (typeof url !== 'string') return undefined
+    response = await fetch(url, {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     })
   } catch {

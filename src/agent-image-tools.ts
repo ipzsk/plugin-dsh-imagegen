@@ -1,6 +1,7 @@
 /** Agent-facing image-generation tools backed by the shared host queue. */
 
 import type { Context } from '@deepseek-ai/cordis'
+import { readPunkSkill } from './punk-skills.ts'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import type { ToolResult, ToolResultView } from '@deepseek-ai/dsh-tools'
 import type { AttachmentStore, ImageAttachmentRef, ImageMediaType } from '@deepseek-ai/dsh-attachment'
@@ -317,6 +318,19 @@ export function registerAgentImageTools(ctx: Context, runtime: ImageGenerationRu
   const findTask = (id: string): GenerationTask => findAgentImageTask(runtime, id)
   const waitForTask = (id: string, signal: AbortSignal | undefined): Promise<GenerationTask> => waitForAgentImageTask(runtime, id, signal)
   const disposers = [
+    ctx.tools.register(defineTool({
+      name: 'punk_image_skill',
+      description: 'Read bundled Punk cover/avatar image skills. Omit style_id to list styles; pass an exact style id to read its workflow, visual rules and prompt blueprint before composing a prompt and calling generate_image or edit_image. This tool does not generate images.',
+      parameters: { style_id: { type: 'string', description: 'Exact Punk style id from the catalog.' } },
+      output: {
+        schema: { type: 'object', additionalProperties: false, properties: { content: { type: 'string', required: true } } },
+        render: (_args, value) => [{ type: 'text', text: value.content }],
+      },
+      async execute(args) {
+        if (!resolve().enabled) throw new Error('生图插件已关闭。')
+        return readPunkSkill(args.style_id)
+      },
+    })),
     ctx.tools.register(defineTool({
       name: 'generate_image',
       description: 'Generate an image. By default this tool call stays pending until the task reaches a final state; completed images are shown beside this tool call, while the model receives their attachment references, without creating a user message. Set wait_for_completion to false for background mode, then use get_image_generation_task explicitly. Only use models configured for this plugin; omit model to use the first configured image model.',

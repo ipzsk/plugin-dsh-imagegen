@@ -1021,6 +1021,7 @@ await check('C9 Agent tools wait for results, keep images in the UI view, edit, 
     }],
   }))
   try {
+    assert.match((await tools.get('punk_image_skill').execute({ style_id: 'pixel-avatar' }, {})).content, /avatar-prompt-blueprint/)
     const generated = await tools.get('generate_image').execute({ prompt: 'a mismatch cat', size: '1:1', quality: '4k', detail: 'standard' }, { agent })
     assert.equal(generated.status, 'completed', 'the Agent tool waits for the task to finish')
     assert.equal(generated.images.length, 2)

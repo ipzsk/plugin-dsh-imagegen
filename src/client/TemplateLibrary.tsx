@@ -93,6 +93,7 @@ export function TemplateLibrary(props: {
   const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [selected, setSelected] = useState<TemplateCase | null>(null)
   const [copied, setCopied] = useState(false)
+  const [punkSubject, setPunkSubject] = useState('')
   const [refreshing, setRefreshing] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [cacheAll, setCacheAll] = useState<{ running: boolean; done: number; total: number }>({ running: false, done: 0, total: 0 })
@@ -252,8 +253,8 @@ export function TemplateLibrary(props: {
             ) : null}
           </span>
           <span className={css.headerActions}>
-            <Button variant="outline" size="sm" disabled={refreshing || cacheAll.running} onClick={() => { void refresh() }}>
-              {refreshing ? tt('templates.refreshing') : tt('templates.refresh')}
+            <Button variant="outline" size="sm" disabled={activeMeta.bundledOnly || refreshing || cacheAll.running} onClick={() => { void refresh() }}>
+              {activeMeta.bundledOnly ? '随插件更新' : refreshing ? tt('templates.refreshing') : tt('templates.refresh')}
             </Button>
             <Button
               variant="outline"
@@ -420,7 +421,12 @@ export function TemplateLibrary(props: {
               </div>
               <pre className={css.detailPrompt}>{selected.prompt}</pre>
               <div className={css.detailActions}>
-                <Button variant="primary" size="md" onClick={() => { onUse(selected.prompt) }}>
+                {activeSource === 'punk' && <label style={{ display: 'grid', gap: 6, width: '100%' }}>
+                  主题 / 文章摘要 / 头像需求
+                  <textarea aria-label="punk 创作需求" value={punkSubject} onChange={e => setPunkSubject(e.target.value)} placeholder="例如：为介绍 AI 工作流的文章制作封面，标题是「把时间留给创造」" rows={3} />
+                  <small>头像风格请先在「图生图」上传参考图。这里应用提示词，不会立即生成或扣费。</small>
+                </label>}
+                <Button variant="primary" size="md" disabled={activeSource === 'punk' && !punkSubject.trim()} onClick={() => { onUse(activeSource === 'punk' ? `用户创作需求：${punkSubject.trim()}\n\n${selected.prompt}` : selected.prompt) }}>
                   {tt('templates.use')}
                 </Button>
                 <Button variant="outline" size="md" onClick={() => { void copyPrompt(selected.prompt) }}>

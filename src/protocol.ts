@@ -8,7 +8,7 @@
 export const IMAGEGEN_SETTINGS_NAMESPACE = 'dsh-imagegen'
 
 /** Published package version shared by the host updater and the client UI. */
-export const PLUGIN_VERSION = '1.6.0'
+export const PLUGIN_VERSION = '1.7.0'
 
 /** Same-origin route family (loopback-only, mirroring the dsh-ssh fence). */
 export const SETTINGS_API = {
@@ -143,6 +143,7 @@ export interface TemplateSourceMeta {
   homepage: string
   /** One-line description of the source (tab tooltip). */
   description: string
+  bundledOnly?: boolean
 }
 
 /**
@@ -164,10 +165,11 @@ export const TEMPLATE_SOURCES: TemplateSourceMeta[] = [
     homepage: 'https://gpt-image2.canghe.ai/',
     description: 'GPT-Image2 Prompt Gallery（gpt-image2.canghe.ai，定期更新）',
   },
+  { id: 'punk', label: 'punk', homepage: 'https://github.com/adrianpunk/Punk-Skill', description: 'Punk 封面与头像 Skill · 随插件版本更新', bundledOnly: true },
 ]
 
 /** Default source id when a request does not name one (legacy clients). */
-export const DEFAULT_TEMPLATE_SOURCE_ID = TEMPLATE_SOURCES[0]!.id
+export const DEFAULT_TEMPLATE_SOURCE_ID = 'vibeui'
 
 /** True when the id names a registered template source. */
 export function isTemplateSourceId(id: string): boolean {
