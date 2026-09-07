@@ -1,12 +1,12 @@
 /** GitHub Release discovery and explicit, user-triggered plugin updates. */
 
-import { spawn, type ChildProcess } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { PLUGIN_VERSION } from './protocol.ts'
 
 /** Keep this in sync with package.json for each published release. */
 export const CURRENT_VERSION = PLUGIN_VERSION
 export const PACKAGE_NAME = '@dickpy/dsh-imagegen'
-export const RELEASES_URL = 'https://api.github.com/repos/dickpy/dsh-imagegen/releases/latest'
+export const RELEASES_URL = 'https://api.github.com/repos/JayceHuang/dsh-imagegen/releases/latest'
 
 const CHECK_TIMEOUT_MS = 10_000
 const CACHE_TTL_MS = 15 * 60_000
@@ -63,7 +63,7 @@ export async function checkForUpdate(fetchFn: typeof fetch = fetch, now = Date.n
   if (release.draft === true || release.prerelease === true) throw new Error('latest GitHub Release is not stable')
   const latestVersion = normalizedReleaseVersion(release.tag_name)
   if (latestVersion === undefined) throw new Error('latest GitHub Release has an invalid version tag')
-  const releaseUrl = typeof release.html_url === 'string' ? release.html_url : 'https://github.com/dickpy/dsh-imagegen/releases'
+  const releaseUrl = typeof release.html_url === 'string' ? release.html_url : 'https://github.com/JayceHuang/dsh-imagegen/releases'
   const value: UpdateInfo = {
     currentVersion: CURRENT_VERSION,
     latestVersion,
@@ -93,22 +93,8 @@ export function installUpdate(
   argv: readonly string[] = process.argv,
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<void> {
-  if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
-    return Promise.reject(new Error('invalid update version'))
-  }
-  const profile = profileFromProcess(argv, env)
-  const command = process.platform === 'win32' ? 'dsh.cmd' : 'dsh'
-  const child = spawnFn(command, ['plugin', '--profile', profile, 'add', `${PACKAGE_NAME}@${version}`], {
-    shell: process.platform === 'win32',
-    stdio: 'ignore',
-  }) as ChildProcess
-  return new Promise((resolve, reject) => {
-    child.once('error', reject)
-    child.once('exit', (code, signal) => {
-      if (code === 0) resolve()
-      else reject(new Error(signal === null ? `plugin update exited with code ${code ?? 'unknown'}` : `plugin update terminated by ${signal}`))
-    })
-  })
+  void version; void spawnFn; void argv; void env
+  return Promise.reject(new Error('请在 IPZSK 客户端的插件市场中更新，只有后台审核的版本可以安装。'))
 }
 
 /** Test helper: clear the host-side Release cache. */

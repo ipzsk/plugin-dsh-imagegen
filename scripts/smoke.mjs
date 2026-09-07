@@ -94,6 +94,10 @@ await check('A3 updater parses stable Releases and caches checks', async () => {
   host.clearUpdateCache()
 })
 
+await check('A4 self-update cannot bypass IPZSK review', async () => {
+  await assert.rejects(host.installUpdate('1.6.0', () => { throw new Error('must not spawn') }), /IPZSK/)
+})
+
 // ---------------------------------------------- B. engine vs mock upstream
 const pngBytes = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d49444154789c6360000002000100ffff03000006000557bfabd40000000049454e44ae426082', 'hex')
 let activeGenerationRequests = 0
