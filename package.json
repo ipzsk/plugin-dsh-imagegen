@@ -75,6 +75,7 @@
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",
+    "dev:desktop": "DSH_PLUGIN_OUT_DIR=\"$HOME/Library/Application Support/IPZSK Desktop/dsh-home/profiles/desktop/node_modules/@dickpy/dsh-imagegen/lib\" tsdown --watch",
     "typecheck": "tsc --noEmit",
     "fetch-templates": "node scripts/fetch-templates.mjs"
   }

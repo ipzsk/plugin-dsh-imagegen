@@ -34,6 +34,9 @@ const CLIENT_EXTERNALS: readonly string[] = [
   '@deepseek-ai/dsh-client-store',
 ]
 
+/** `dev:desktop` writes straight into the installed Desktop copy so client HMR swaps it live. */
+const OUT_DIR = process.env.DSH_PLUGIN_OUT_DIR ?? 'lib'
+
 /** Virtual-id wrapper keeping module CSS away from tsdown's own css pipeline. */
 const CSS_VIRTUAL_PREFIX = '\0dsh-css:'
 const CSS_VIRTUAL_SUFFIX = '.mjs'
@@ -44,7 +47,7 @@ const CSS_VIRTUAL_SUFFIX = '.mjs'
 const nodeConfig: UserConfig = {
   name: ID,
   entry: ['src/index.ts'],
-  outDir: 'lib',
+  outDir: OUT_DIR,
   format: ['esm'],
   platform: 'node',
   target: 'es2024',
@@ -68,7 +71,7 @@ const nodeConfig: UserConfig = {
 const clientConfig: UserConfig = {
   name: `${ID}/client`,
   entry: { client: 'src/client/index.ts' },
-  outDir: 'lib',
+  outDir: OUT_DIR,
   format: 'cjs',
   platform: 'browser',
   dts: false,
