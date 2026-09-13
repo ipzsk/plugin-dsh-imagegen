@@ -399,7 +399,7 @@ export function TemplateLibrary(props: {
       </section>
 
       {selected !== null ? (
-        <div className={css.detailOverlay} onClick={() => { setSelected(null) }}>
+        <div className={css.detailOverlay} onClick={(event) => { event.stopPropagation(); setSelected(null) }}>
           <section className={css.detail} onClick={(event) => { event.stopPropagation() }}>
             <div className={css.detailMedia}>
               {selected.image !== '' ? (
@@ -420,12 +420,14 @@ export function TemplateLibrary(props: {
                 ) : null}
               </div>
               <pre className={css.detailPrompt}>{selected.prompt}</pre>
+              {activeSource === 'punk' ? (
+                <label className={css.detailField}>
+                  <span className={css.detailFieldLabel}>主题 / 文章摘要 / 头像需求</span>
+                  <textarea className={css.detailTextarea} aria-label="punk 创作需求" value={punkSubject} onChange={e => setPunkSubject(e.target.value)} placeholder="例如：为介绍 AI 工作流的文章制作封面，标题是「把时间留给创造」" rows={3} />
+                  <span className={css.detailFieldHint}>头像风格请先在「图生图」上传参考图。这里应用提示词，不会立即生成或扣费。</span>
+                </label>
+              ) : null}
               <div className={css.detailActions}>
-                {activeSource === 'punk' && <label style={{ display: 'grid', gap: 6, width: '100%' }}>
-                  主题 / 文章摘要 / 头像需求
-                  <textarea aria-label="punk 创作需求" value={punkSubject} onChange={e => setPunkSubject(e.target.value)} placeholder="例如：为介绍 AI 工作流的文章制作封面，标题是「把时间留给创造」" rows={3} />
-                  <small>头像风格请先在「图生图」上传参考图。这里应用提示词，不会立即生成或扣费。</small>
-                </label>}
                 <Button variant="primary" size="md" disabled={activeSource === 'punk' && !punkSubject.trim()} onClick={() => { onUse(activeSource === 'punk' ? `用户创作需求：${punkSubject.trim()}\n\n${selected.prompt}` : selected.prompt) }}>
                   {tt('templates.use')}
                 </Button>
