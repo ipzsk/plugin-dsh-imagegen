@@ -5,7 +5,7 @@
   &nbsp;
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-3b82f6.svg" alt="License" /></a>
   &nbsp;
-  <a href="https://github.com/dickpy/dsh-imagegen"><img src="https://img.shields.io/badge/platform-DeepSeek%20Harness-111827" alt="Platform" /></a>
+  <a href="https://github.com/ipzsk/plugin-dsh-imagegen"><img src="https://img.shields.io/badge/platform-DeepSeek%20Harness-111827" alt="Platform" /></a>
 </p>
 
 <p align="center">
@@ -23,6 +23,33 @@
 </div>
 
 `dsh-imagegen` 是 DeepSeek Harness（DSH）的原生 AI 图像工作台。配置任意 OpenAI 兼容生图接口后，Agent 对话生图、`/edit_image` 斜杠命令连续编辑、多模型并列对比、多来源案例模板库与画廊资产管理都在同一个窗口完成；电商模式还能把一张商品图扩展成主图、卖点图、场景图等一整套商品视觉。生成任务由宿主进程排队执行，不卡界面、不打断对话，图片也不必在多个工具之间来回搬运。
+
+## IPZSK 维护版与插件市场
+
+本仓库是 `dsh-imagegen` 的 IPZSK 维护与发布仓库，保留 `@dickpy/dsh-imagegen` 包身份和 `imagegen` 运行时 ID，以便现有安装可以原位升级。原项目与作者信息继续保留在许可证和提交历史中；IPZSK 维护版通过 [本仓库 Releases](https://github.com/ipzsk/plugin-dsh-imagegen/releases) 发布。
+
+主要能力包括：
+
+- Agent 对话生图、`generate_image`、`edit_image` 和 `/edit_image` 连续改图。
+- 文生图、图生图、多模型并列对比与宿主任务队列。
+- 三栏工作台、无限画布、案例模板库、收藏和画廊资产管理。
+- 电商套图模式，将商品素材扩展为主图、卖点图、场景图和细节图。
+- 生成历史、任务恢复、批量下载以及加入当前对话继续编辑。
+
+插件独立于 [desktop-ipzsk](https://github.com/ipzsk/desktop-ipzsk) 发布。新 Release 经过 IPZSK 开发者中心提交和后台审核后，由 [token-ipzsk](https://github.com/ipzsk/token-ipzsk) 写入 `/api/me/plugin-market`。桌面端只安装审核目录中的准确版本，并校验包名、版本、大小与 SHA-256。插件更新无需重新构建桌面安装包，配置、历史和画廊数据由宿主 Profile 保留。
+
+仓库创建或发布 Release 不会自动上架，最终市场状态以 IPZSK 插件市场审核目录为准。当前 IPZSK Release：[v1.7.0](https://github.com/ipzsk/plugin-dsh-imagegen/releases/tag/v1.7.0)。
+
+## 六个仓库如何协作
+
+| 仓库 | 职责 |
+| --- | --- |
+| [web-ipzsk](https://github.com/ipzsk/web-ipzsk) | 官网、账户、开发者中心和 Web 创作工作台 |
+| [desktop-ipzsk](https://github.com/ipzsk/desktop-ipzsk) | DeepSeek 官方底座、IPZSK 登录和插件市场宿主 |
+| [token-ipzsk](https://github.com/ipzsk/token-ipzsk) | 账户、号池、图片模型路由、计费和插件审核 |
+| [plugin-dsh-imagegen](https://github.com/ipzsk/plugin-dsh-imagegen) | 当前仓库，AI 生图与改图插件 |
+| [plugin-dsh-doc-to-excel](https://github.com/ipzsk/plugin-dsh-doc-to-excel) | Word/PDF 转分类 Excel 插件 |
+| [plugin-dsh-swf-studio](https://github.com/ipzsk/plugin-dsh-swf-studio) | FloorLED 与 SWF 场景制作插件 |
 
 <a id="quick-start"></a>
 ## 快速开始
@@ -50,13 +77,13 @@ dsh plugin --profile web add @dickpy/dsh-imagegen
 用 dsh plugin --profile web add @dickpy/dsh-imagegen 安装 AI 生图插件。完成后重启 dsh web，点击“新会话 / 生图”中的“生图” Tab，并打开设置中的 AI 生图配置。
 ```
 
-**从 Release 安装** —— 从 [GitHub Releases](https://github.com/dickpy/dsh-imagegen/releases) 下载目标版本的 tgz 后执行：
+**从 IPZSK Release 安装** —— 从 [GitHub Releases](https://github.com/ipzsk/plugin-dsh-imagegen/releases) 下载目标版本的 tgz 后执行：
 
 ```bash
 dsh plugin --profile web add <下载路径>/dickpy-dsh-imagegen-<版本号>.tgz
 ```
 
-**升级与回滚** —— 重复执行 `add` 命令即可更新到最新版；面板打开时也会自动检测新版本，出现顶部横幅后可在线更新，完成后重启 `dsh web` 生效。渠道配置、历史记录和画廊数据由 DSH 宿主保存，正常升级不会清空。需要固定版本时，使用 `@dickpy/dsh-imagegen@<版本号>` 或指定 Release tgz。
+**升级与回滚** —— 在 IPZSK Desktop 中通过插件市场检查并安装审核版本；其他兼容 Harness 可重复执行 `add` 命令，或使用面板顶部的更新提示。更新后重启 `dsh web` 生效。渠道配置、历史记录和画廊数据由 DSH 宿主保存，正常升级不会清空。需要固定版本时，使用 `@dickpy/dsh-imagegen@<版本号>` 或指定 Release tgz。
 
 </details>
 
@@ -379,9 +406,9 @@ pnpm run watch
 node scripts/smoke.mjs
 ```
 
-- 发现问题请提交 [Bug 报告](https://github.com/dickpy/dsh-imagegen/issues/new?template=bug_report.yml)，附带插件版本、DSH 版本和复现步骤。请勿粘贴 API 密钥。
-- 有改进想法请提交 [功能建议](https://github.com/dickpy/dsh-imagegen/issues/new?template=feature_request.yml)。
-- 查看全部 [Release](https://github.com/dickpy/dsh-imagegen/releases) 和 [Issue](https://github.com/dickpy/dsh-imagegen/issues)。
+- 发现问题请提交 [Bug 报告](https://github.com/ipzsk/plugin-dsh-imagegen/issues)，附带插件版本、DSH 版本和复现步骤。请勿粘贴 API 密钥。
+- 有改进想法请提交 [功能建议](https://github.com/ipzsk/plugin-dsh-imagegen/issues)。
+- 查看全部 [Release](https://github.com/ipzsk/plugin-dsh-imagegen/releases) 和 [Issue](https://github.com/ipzsk/plugin-dsh-imagegen/issues)。
 - 如果这个插件对你有帮助，欢迎 Star。
 
 ## 许可证
